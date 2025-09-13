@@ -101,35 +101,30 @@ void rb_print_tree_structure(rb_tree_t *tree, void (*print_data)(const void *dat
 static void print_node_structure(rb_tree_t *tree, rb_node_t *node, 
                                 void (*print_data)(const void *data), 
                                 int depth, char *prefix, bool is_last) {
+    (void)prefix;   /* Unused parameter */
+    (void)is_last;  /* Unused parameter */
+    
     if (node == tree->nil) {
         return;
     }
     
-    printf("%s", prefix);
-    printf("%s", is_last ? "└── " : "├── ");
+    /* Print indentation */
+    for (int i = 0; i < depth; i++) {
+        printf("  ");
+    }
     
     /* Print node data and color */
     printf("[%c] ", node->color == RB_RED ? 'R' : 'B');
     print_data(node->data);
     printf("\n");
     
-    /* Prepare prefix for children */
-    char new_prefix[1024];
-    snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, 
-             is_last ? "    " : "│   ");
-    
     /* Print children */
-    bool has_left = (node->left != tree->nil);
-    bool has_right = (node->right != tree->nil);
-    
-    if (has_left) {
-        print_node_structure(tree, node->left, print_data, depth + 1, 
-                           new_prefix, !has_right);
+    if (node->left != tree->nil) {
+        print_node_structure(tree, node->left, print_data, depth + 1, prefix, false);
     }
     
-    if (has_right) {
-        print_node_structure(tree, node->right, print_data, depth + 1, 
-                           new_prefix, true);
+    if (node->right != tree->nil) {
+        print_node_structure(tree, node->right, print_data, depth + 1, prefix, true);
     }
 }
 
