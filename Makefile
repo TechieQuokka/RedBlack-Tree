@@ -11,9 +11,12 @@ OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 TARGET = $(BINDIR)/rbtree_test
 
 LIBRARY = $(BINDIR)/librbtree.a
-LIB_OBJECTS = $(OBJDIR)/rbtree.o
+LIB_OBJECTS = $(OBJDIR)/rbtree.o $(OBJDIR)/rbtree_utils.o
 
-.PHONY: all clean test debug release library
+ADVANCED_TARGET = $(BINDIR)/advanced_example
+BENCHMARK_TARGET = $(BINDIR)/benchmark
+
+.PHONY: all clean test debug release library advanced benchmark examples
 
 all: $(TARGET)
 
@@ -24,6 +27,12 @@ $(TARGET): $(OBJECTS) | $(BINDIR)
 
 $(LIBRARY): $(LIB_OBJECTS) | $(BINDIR)
 	ar rcs $@ $(LIB_OBJECTS)
+
+$(ADVANCED_TARGET): $(OBJDIR)/advanced_example.o $(LIB_OBJECTS) | $(BINDIR)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(BENCHMARK_TARGET): $(OBJDIR)/benchmark.o $(LIB_OBJECTS) | $(BINDIR)
+	$(CC) $^ -o $@ $(LDFLAGS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -37,6 +46,16 @@ $(BINDIR):
 test: $(TARGET)
 	@echo "Running Red-Black Tree tests..."
 	@$(TARGET)
+
+advanced: $(ADVANCED_TARGET)
+	@echo "Running advanced examples..."
+	@$(ADVANCED_TARGET)
+
+benchmark: $(BENCHMARK_TARGET)
+	@echo "Running performance benchmarks..."
+	@$(BENCHMARK_TARGET)
+
+examples: advanced
 
 debug: CFLAGS += -DDEBUG -g
 debug: $(TARGET)
@@ -58,16 +77,22 @@ uninstall:
 
 help:
 	@echo "Available targets:"
-	@echo "  all      - Build test executable (default)"
-	@echo "  library  - Build static library"
-	@echo "  test     - Build and run tests"
-	@echo "  debug    - Build with debug flags"
-	@echo "  release  - Build optimized release"
-	@echo "  clean    - Remove build files"
-	@echo "  install  - Install library system-wide"
-	@echo "  uninstall- Remove installed library"
-	@echo "  help     - Show this help message"
+	@echo "  all       - Build test executable (default)"
+	@echo "  library   - Build static library"
+	@echo "  test      - Build and run tests"
+	@echo "  advanced  - Build and run advanced examples"
+	@echo "  benchmark - Build and run performance benchmarks"
+	@echo "  examples  - Build and run examples"
+	@echo "  debug     - Build with debug flags"
+	@echo "  release   - Build optimized release"
+	@echo "  clean     - Remove build files"
+	@echo "  install   - Install library system-wide"
+	@echo "  uninstall - Remove installed library"
+	@echo "  help      - Show this help message"
 
 # Dependencies
 $(OBJDIR)/rbtree.o: rbtree.c rbtree.h
+$(OBJDIR)/rbtree_utils.o: rbtree_utils.c rbtree_utils.h rbtree.h
 $(OBJDIR)/test.o: test.c rbtree.h
+$(OBJDIR)/advanced_example.o: advanced_example.c rbtree.h rbtree_utils.h
+$(OBJDIR)/benchmark.o: benchmark.c rbtree.h rbtree_utils.h
